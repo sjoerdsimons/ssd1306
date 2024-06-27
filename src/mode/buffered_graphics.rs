@@ -3,10 +3,10 @@
 use crate::{
     command::AddrMode,
     rotation::DisplayRotation,
-    size::{DisplaySize, NewZeroed},
-    Ssd1306,
+    size::{DisplaySize, DisplaySizeAsync, NewZeroed},
+    Ssd1306, Ssd1306Async,
 };
-use display_interface::{DisplayError, WriteOnlyDataCommand};
+use display_interface::{AsyncWriteOnlyDataCommand, DisplayError, WriteOnlyDataCommand};
 
 /// Buffered graphics mode.
 ///
@@ -14,6 +14,10 @@ use display_interface::{DisplayError, WriteOnlyDataCommand};
 /// buffer is drawn to by [`set_pixel`](Ssd1306::set_pixel) commands or
 /// [`embedded-graphics`](https://docs.rs/embedded-graphics) commands. The display can then be
 /// updated using the [`flush`](Ssd1306::flush) method.
+#[maybe_async_cfg::maybe(
+    sync(keep_self),
+    async(idents(DisplaySize(async = "DisplaySizeAsync")))
+)]
 #[derive(Clone, Debug)]
 pub struct BufferedGraphicsMode<SIZE>
 where
@@ -26,6 +30,10 @@ where
     max_y: u8,
 }
 
+#[maybe_async_cfg::maybe(
+    sync(keep_self),
+    async(idents(DisplaySize(async = "DisplaySizeAsync")))
+)]
 impl<SIZE> BufferedGraphicsMode<SIZE>
 where
     SIZE: DisplaySize,
@@ -42,6 +50,15 @@ where
     }
 }
 
+#[maybe_async_cfg::maybe(
+    sync(keep_self),
+    async(idents(
+        DisplaySize(async = "DisplaySizeAsync"),
+        DisplayConfig(async = "DisplayConfigAsync"),
+        WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand"),
+        BufferedGraphicsMode(async = "BufferedGraphicsModeAsync"),
+    ))
+)]
 impl<DI, SIZE> DisplayConfig for Ssd1306<DI, SIZE, BufferedGraphicsMode<SIZE>>
 where
     DI: WriteOnlyDataCommand,
@@ -52,17 +69,25 @@ where
     /// Set the display rotation
     ///
     /// This method resets the cursor but does not clear the screen.
-    fn set_rotation(&mut self, rot: DisplayRotation) -> Result<(), DisplayError> {
-        self.set_rotation(rot)
+    async fn set_rotation(&mut self, rot: DisplayRotation) -> Result<(), DisplayError> {
+        self.set_rotation(rot).await
     }
 
     /// Initialise and clear the display in graphics mode.
-    fn init(&mut self) -> Result<(), DisplayError> {
+    async fn init(&mut self) -> Result<(), DisplayError> {
         self.clear_impl(false);
-        self.init_with_addr_mode(AddrMode::Horizontal)
+        self.init_with_addr_mode(AddrMode::Horizontal).await
     }
 }
 
+#[maybe_async_cfg::maybe(
+    sync(keep_self),
+    async(idents(
+        DisplaySize(async = "DisplaySizeAsync"),
+        WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand"),
+        BufferedGraphicsMode(async = "BufferedGraphicsModeAsync")
+    ))
+)]
 impl<DI, SIZE> Ssd1306<DI, SIZE, BufferedGraphicsMode<SIZE>>
 where
     DI: WriteOnlyDataCommand,
@@ -86,7 +111,7 @@ where
     /// Write out data to a display.
     ///
     /// This only updates the parts of the display that have changed since the last flush.
-    pub fn flush(&mut self) -> Result<(), DisplayError> {
+    pub async fn flush(&mut self) -> Result<(), DisplayError> {
         // Nothing to do if no pixels have changed since the last update
         if self.mode.max_x < self.mode.min_x || self.mode.max_y < self.mode.min_y {
             return Ok(());
@@ -129,7 +154,8 @@ where
                 self.set_draw_area(
                     (disp_min_x + offset_x, disp_min_y + SIZE::OFFSETY),
                     (disp_max_x + offset_x, disp_max_y + SIZE::OFFSETY),
-                )?;
+                )
+                .await?;
 
                 Self::flush_buffer_chunks(
                     &mut self.interface,
@@ -138,12 +164,14 @@ where
                     (disp_min_x, disp_min_y),
                     (disp_max_x, disp_max_y),
                 )
+                .await
             }
             DisplayRotation::Rotate90 | DisplayRotation::Rotate270 => {
                 self.set_draw_area(
                     (disp_min_y + offset_x, disp_min_x + SIZE::OFFSETY),
                     (disp_max_y + offset_x, disp_max_x + SIZE::OFFSETY),
-                )?;
+                )
+                .await?;
 
                 Self::flush_buffer_chunks(
                     &mut self.interface,
@@ -152,6 +180,7 @@ where
                     (disp_min_y, disp_min_x),
                     (disp_max_y, disp_max_x),
                 )
+                .await
             }
         }
     }
@@ -201,9 +230,17 @@ use embedded_graphics_core::{
     Pixel,
 };
 
-use super::DisplayConfig;
+use super::{DisplayConfig, DisplayConfigAsync};
 
 #[cfg(feature = "graphics")]
+#[maybe_async_cfg::maybe(
+    sync(keep_self),
+    async(idents(
+        DisplaySize(async = "DisplaySizeAsync"),
+        BufferedGraphicsMode(async = "BufferedGraphicsModeAsync"),
+        WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand")
+    ))
+)]
 impl<DI, SIZE> DrawTarget for Ssd1306<DI, SIZE, BufferedGraphicsMode<SIZE>>
 where
     DI: WriteOnlyDataCommand,
@@ -235,6 +272,14 @@ where
 }
 
 #[cfg(feature = "graphics")]
+#[maybe_async_cfg::maybe(
+    sync(keep_self,),
+    async(idents(
+        DisplaySize(async = "DisplaySizeAsync"),
+        WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand"),
+        BufferedGraphicsMode(async = "BufferedGraphicsModeAsync")
+    ))
+)]
 impl<DI, SIZE> OriginDimensions for Ssd1306<DI, SIZE, BufferedGraphicsMode<SIZE>>
 where
     DI: WriteOnlyDataCommand,
