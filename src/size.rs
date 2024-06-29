@@ -1,8 +1,11 @@
 //! Display size.
 
 use super::command::Command;
+#[cfg(feature = "async")]
 use super::command::CommandAsync;
-use display_interface::{AsyncWriteOnlyDataCommand, DisplayError, WriteOnlyDataCommand};
+#[cfg(feature = "async")]
+use display_interface::AsyncWriteOnlyDataCommand;
+use display_interface::{DisplayError, WriteOnlyDataCommand};
 
 /// Workaround trait, since `Default` is only implemented to arrays up to 32 of size
 pub trait NewZeroed {
@@ -22,7 +25,10 @@ impl<const N: usize> NewZeroed for [u8; N] {
 /// This includes resolution, offset and framebuffer size.
 #[maybe_async_cfg::maybe(
     sync(keep_self),
-    async(idents(WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand")))
+    async(
+        feature = "async",
+        idents(WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand"))
+    )
 )]
 pub trait DisplaySize {
     /// Width in pixels
@@ -67,7 +73,7 @@ maybe_async_cfg::content! {
 /// Size information for the common 128x64 variants
 #[derive(Debug, Copy, Clone)]
 pub struct DisplaySize128x64;
-#[maybe_async_cfg::maybe(sync(keep_self), async(keep_self))]
+#[maybe_async_cfg::maybe(sync(keep_self), async(feature = "async", keep_self))]
 impl DisplaySize for DisplaySize128x64 {
     const WIDTH: u8 = 128;
     const HEIGHT: u8 = 64;
@@ -85,7 +91,7 @@ impl DisplaySize for DisplaySize128x64 {
 /// Size information for the common 128x32 variants
 #[derive(Debug, Copy, Clone)]
 pub struct DisplaySize128x32;
-#[maybe_async_cfg::maybe(sync(keep_self), async(keep_self))]
+#[maybe_async_cfg::maybe(sync(keep_self), async(feature = "async", keep_self))]
 impl DisplaySize for DisplaySize128x32 {
     const WIDTH: u8 = 128;
     const HEIGHT: u8 = 32;
@@ -103,7 +109,7 @@ impl DisplaySize for DisplaySize128x32 {
 /// Size information for the common 96x16 variants
 #[derive(Debug, Copy, Clone)]
 pub struct DisplaySize96x16;
-#[maybe_async_cfg::maybe(sync(keep_self), async(keep_self))]
+#[maybe_async_cfg::maybe(sync(keep_self), async(feature = "async", keep_self))]
 impl DisplaySize for DisplaySize96x16 {
     const WIDTH: u8 = 96;
     const HEIGHT: u8 = 16;
@@ -121,7 +127,7 @@ impl DisplaySize for DisplaySize96x16 {
 /// Size information for the common 72x40 variants
 #[derive(Debug, Copy, Clone)]
 pub struct DisplaySize72x40;
-#[maybe_async_cfg::maybe(sync(keep_self), async(keep_self))]
+#[maybe_async_cfg::maybe(sync(keep_self), async(feature = "async", keep_self))]
 impl DisplaySize for DisplaySize72x40 {
     const WIDTH: u8 = 72;
     const HEIGHT: u8 = 40;
@@ -142,7 +148,7 @@ impl DisplaySize for DisplaySize72x40 {
 /// Size information for the common 64x48 variants
 #[derive(Debug, Copy, Clone)]
 pub struct DisplaySize64x48;
-#[maybe_async_cfg::maybe(sync(keep_self), async(keep_self))]
+#[maybe_async_cfg::maybe(sync(keep_self), async(feature = "async", keep_self))]
 impl DisplaySize for DisplaySize64x48 {
     const WIDTH: u8 = 64;
     const HEIGHT: u8 = 48;
@@ -162,7 +168,7 @@ impl DisplaySize for DisplaySize64x48 {
 /// Size information for the common 64x32 variants
 #[derive(Debug, Copy, Clone)]
 pub struct DisplaySize64x32;
-#[maybe_async_cfg::maybe(sync(keep_self), async(keep_self))]
+#[maybe_async_cfg::maybe(sync(keep_self), async(feature = "async", keep_self))]
 impl DisplaySize for DisplaySize64x32 {
     const WIDTH: u8 = 64;
     const HEIGHT: u8 = 32;

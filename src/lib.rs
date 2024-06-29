@@ -125,22 +125,28 @@ use core::convert::Infallible;
 pub use crate::i2c_interface::I2CDisplayInterface;
 use crate::mode::BasicMode;
 use brightness::Brightness;
-use command::{AddrMode, Command, CommandAsync, VcomhLevel};
-use display_interface::{
-    AsyncWriteOnlyDataCommand, DataFormat::U8, DisplayError, WriteOnlyDataCommand,
-};
+#[cfg(feature = "async")]
+use command::CommandAsync;
+use command::{AddrMode, Command, VcomhLevel};
+#[cfg(feature = "async")]
+use display_interface::AsyncWriteOnlyDataCommand;
+use display_interface::{DataFormat::U8, DisplayError, WriteOnlyDataCommand};
 use embedded_hal::{delay::DelayNs, digital::OutputPin};
+#[cfg(feature = "async")]
 use embedded_hal_async::delay::DelayNs as DelayNsAsync;
 use error::Error;
-use mode::{BufferedGraphicsMode, BufferedGraphicsModeAsync, TerminalMode};
+#[cfg(feature = "async")]
+use mode::BufferedGraphicsModeAsync;
+use mode::{BufferedGraphicsMode, TerminalMode};
 use rotation::DisplayRotation;
 use size::DisplaySize;
+#[cfg(feature = "async")]
 use size::DisplaySizeAsync;
 
 /// SSD1306 driver.
 ///
 /// Note that some methods are only available when the display is configured in a certain [`mode`].
-#[maybe_async_cfg::maybe(sync(keep_self), async())]
+#[maybe_async_cfg::maybe(sync(keep_self), async(feature = "async"))]
 #[derive(Copy, Clone, Debug)]
 pub struct Ssd1306<DI, SIZE, MODE> {
     interface: DI,
@@ -152,7 +158,7 @@ pub struct Ssd1306<DI, SIZE, MODE> {
 
 #[maybe_async_cfg::maybe(
     sync(keep_self,),
-    async(idents(DisplaySize(async = "DisplaySizeAsync")))
+    async(feature = "async", idents(DisplaySize(async = "DisplaySizeAsync")))
 )]
 impl<DI, SIZE> Ssd1306<DI, SIZE, BasicMode>
 where
@@ -174,10 +180,13 @@ where
 
 #[maybe_async_cfg::maybe(
     sync(keep_self,),
-    async(idents(
-        DisplaySize(async = "DisplaySizeAsync"),
-        BufferedGraphicsMode(async = "BufferedGraphicsModeAsync"),
-    ))
+    async(
+        feature = "async",
+        idents(
+            DisplaySize(async = "DisplaySizeAsync"),
+            BufferedGraphicsMode(async = "BufferedGraphicsModeAsync"),
+        )
+    )
 )]
 impl<DI, SIZE, MODE> Ssd1306<DI, SIZE, MODE>
 where
@@ -212,11 +221,14 @@ where
 
 #[maybe_async_cfg::maybe(
     sync(keep_self),
-    async(idents(
-        Command(async = "CommandAsync"),
-        DisplaySize(async = "DisplaySizeAsync"),
-        WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand"),
-    ))
+    async(
+        feature = "async",
+        idents(
+            Command(async = "CommandAsync"),
+            DisplaySize(async = "DisplaySizeAsync"),
+            WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand"),
+        )
+    )
 )]
 impl<DI, SIZE, MODE> Ssd1306<DI, SIZE, MODE>
 where
@@ -504,12 +516,15 @@ where
 // SPI-only reset
 #[maybe_async_cfg::maybe(
     sync(keep_self),
-    async(idents(
-        Command(async = "CommandAsync"),
-        DisplaySize(async = "DisplaySizeAsync"),
-        WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand"),
-        DelayNs(async = "DelayNsAsync")
-    ))
+    async(
+        feature = "async",
+        idents(
+            Command(async = "CommandAsync"),
+            DisplaySize(async = "DisplaySizeAsync"),
+            WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand"),
+            DelayNs(async = "DelayNsAsync")
+        )
+    )
 )]
 impl<DI, SIZE, MODE> Ssd1306<DI, SIZE, MODE> {
     /// Reset the display.

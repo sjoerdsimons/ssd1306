@@ -7,10 +7,12 @@ pub use display_interface_spi::SPIInterface;
 pub use super::{
     brightness::Brightness,
     mode::DisplayConfig,
-    mode::DisplayConfigAsync,
     rotation::DisplayRotation,
     size::{
         DisplaySize, DisplaySize128x32, DisplaySize128x64, DisplaySize64x48, DisplaySize72x40,
         DisplaySize96x16,
     },
 };
+
+#[cfg(feature = "async")]
+pub use super::mode::DisplayConfigAsync;

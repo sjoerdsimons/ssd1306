@@ -3,10 +3,14 @@
 use crate::{
     command::AddrMode,
     rotation::DisplayRotation,
-    size::{DisplaySize, DisplaySizeAsync, NewZeroed},
-    Ssd1306, Ssd1306Async,
+    size::{DisplaySize, NewZeroed},
+    Ssd1306,
 };
-use display_interface::{AsyncWriteOnlyDataCommand, DisplayError, WriteOnlyDataCommand};
+#[cfg(feature = "async")]
+use crate::{size::DisplaySizeAsync, Ssd1306Async};
+#[cfg(feature = "async")]
+use display_interface::AsyncWriteOnlyDataCommand;
+use display_interface::{DisplayError, WriteOnlyDataCommand};
 
 /// Buffered graphics mode.
 ///
@@ -16,7 +20,7 @@ use display_interface::{AsyncWriteOnlyDataCommand, DisplayError, WriteOnlyDataCo
 /// updated using the [`flush`](Ssd1306::flush) method.
 #[maybe_async_cfg::maybe(
     sync(keep_self),
-    async(idents(DisplaySize(async = "DisplaySizeAsync")))
+    async(feature = "async", idents(DisplaySize(async = "DisplaySizeAsync")))
 )]
 #[derive(Clone, Debug)]
 pub struct BufferedGraphicsMode<SIZE>
@@ -32,7 +36,7 @@ where
 
 #[maybe_async_cfg::maybe(
     sync(keep_self),
-    async(idents(DisplaySize(async = "DisplaySizeAsync")))
+    async(feature = "async", idents(DisplaySize(async = "DisplaySizeAsync")))
 )]
 impl<SIZE> BufferedGraphicsMode<SIZE>
 where
@@ -52,12 +56,15 @@ where
 
 #[maybe_async_cfg::maybe(
     sync(keep_self),
-    async(idents(
-        DisplaySize(async = "DisplaySizeAsync"),
-        DisplayConfig(async = "DisplayConfigAsync"),
-        WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand"),
-        BufferedGraphicsMode(async = "BufferedGraphicsModeAsync"),
-    ))
+    async(
+        feature = "async",
+        idents(
+            DisplaySize(async = "DisplaySizeAsync"),
+            DisplayConfig(async = "DisplayConfigAsync"),
+            WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand"),
+            BufferedGraphicsMode(async = "BufferedGraphicsModeAsync"),
+        )
+    )
 )]
 impl<DI, SIZE> DisplayConfig for Ssd1306<DI, SIZE, BufferedGraphicsMode<SIZE>>
 where
@@ -82,11 +89,14 @@ where
 
 #[maybe_async_cfg::maybe(
     sync(keep_self),
-    async(idents(
-        DisplaySize(async = "DisplaySizeAsync"),
-        WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand"),
-        BufferedGraphicsMode(async = "BufferedGraphicsModeAsync")
-    ))
+    async(
+        feature = "async",
+        idents(
+            DisplaySize(async = "DisplaySizeAsync"),
+            WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand"),
+            BufferedGraphicsMode(async = "BufferedGraphicsModeAsync")
+        )
+    )
 )]
 impl<DI, SIZE> Ssd1306<DI, SIZE, BufferedGraphicsMode<SIZE>>
 where
@@ -230,16 +240,21 @@ use embedded_graphics_core::{
     Pixel,
 };
 
-use super::{DisplayConfig, DisplayConfigAsync};
+use super::DisplayConfig;
+#[cfg(feature = "async")]
+use super::DisplayConfigAsync;
 
 #[cfg(feature = "graphics")]
 #[maybe_async_cfg::maybe(
     sync(keep_self),
-    async(idents(
-        DisplaySize(async = "DisplaySizeAsync"),
-        BufferedGraphicsMode(async = "BufferedGraphicsModeAsync"),
-        WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand")
-    ))
+    async(
+        feature = "async",
+        idents(
+            DisplaySize(async = "DisplaySizeAsync"),
+            BufferedGraphicsMode(async = "BufferedGraphicsModeAsync"),
+            WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand")
+        )
+    )
 )]
 impl<DI, SIZE> DrawTarget for Ssd1306<DI, SIZE, BufferedGraphicsMode<SIZE>>
 where
@@ -274,11 +289,14 @@ where
 #[cfg(feature = "graphics")]
 #[maybe_async_cfg::maybe(
     sync(keep_self,),
-    async(idents(
-        DisplaySize(async = "DisplaySizeAsync"),
-        WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand"),
-        BufferedGraphicsMode(async = "BufferedGraphicsModeAsync")
-    ))
+    async(
+        feature = "async",
+        idents(
+            DisplaySize(async = "DisplaySizeAsync"),
+            WriteOnlyDataCommand(async = "AsyncWriteOnlyDataCommand"),
+            BufferedGraphicsMode(async = "BufferedGraphicsModeAsync")
+        )
+    )
 )]
 impl<DI, SIZE> OriginDimensions for Ssd1306<DI, SIZE, BufferedGraphicsMode<SIZE>>
 where

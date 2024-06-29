@@ -9,7 +9,7 @@ use display_interface::{DisplayError, WriteOnlyDataCommand};
 pub use terminal::*;
 
 /// Common functions to all display modes.
-#[maybe_async_cfg::maybe(sync(keep_self,), async())]
+#[maybe_async_cfg::maybe(sync(keep_self,), async(feature = "async"))]
 pub trait DisplayConfig {
     /// Error.
     type Error;
