@@ -88,7 +88,7 @@ async fn main(_spawner: Spawner) {
     let cs = gpio::Output::new(p.PB10, gpio::Level::Low, gpio::Speed::Low);
     let spi = embedded_hal_bus::spi::ExclusiveDevice::new_no_delay(spi, cs).unwrap();
 
-    let interface = display_interface_spi::SPIInterface::new(spi, dc);
+    let interface = SPIInterface::new(spi, dc);
     let mut display_spi = Ssd1306Async::new(interface, DisplaySize128x64, DisplayRotation::Rotate0)
         .into_buffered_graphics_mode();
 
