@@ -135,9 +135,9 @@ use embedded_hal::{delay::DelayNs, digital::OutputPin};
 #[cfg(feature = "async")]
 use embedded_hal_async::delay::DelayNs as DelayNsAsync;
 use error::Error;
-#[cfg(feature = "async")]
-use mode::BufferedGraphicsModeAsync;
 use mode::{BufferedGraphicsMode, TerminalMode};
+#[cfg(feature = "async")]
+use mode::{BufferedGraphicsModeAsync, TerminalModeAsync};
 use rotation::DisplayRotation;
 use size::DisplaySize;
 #[cfg(feature = "async")]
@@ -185,6 +185,7 @@ where
         idents(
             DisplaySize(async = "DisplaySizeAsync"),
             BufferedGraphicsMode(async = "BufferedGraphicsModeAsync"),
+            TerminalMode(async = "TerminalModeAsync"),
         )
     )
 )]

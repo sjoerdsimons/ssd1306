@@ -56,6 +56,10 @@ async = [ "dep:embedded-hal-async" ]
 name = "async_i2c_spi"
 required-features = [ "async" ]
 
+[[example]]
+name = "async_terminal_i2c"
+required-features = [ "async" ]
+
 [profile.dev]
 opt-level="s"
 codegen-units = 1
